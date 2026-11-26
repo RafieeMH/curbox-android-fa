@@ -1,0 +1,38 @@
+name: Build APK (Persian)
+
+# Runs automatically on every push to any branch, and can also be
+# started manually from the Actions tab ("Run workflow" button).
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle (with caching)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Fdroid debug APK (signed with debug key, installable)
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleFdroidDebug --stacktrace
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: curbox-farsi-debug-apk
+          path: app/build/outputs/apk/fdroid/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
